@@ -54,8 +54,8 @@ def scrape():
     mars_facts_df = mars_facts_df.set_index(0)
     mars_facts_df = mars_facts_df.transpose()
     mars_facts_df.reset_index(inplace = True, drop = True)
-    mars_facts_html = mars_facts_df.to_html()
-    mars_facts_html.replace('\n','')
+    mars_facts_html = mars_facts_df.to_html(classes='table table-dark')
+    mars_facts_html = mars_facts_html.replace('\n','')
 
     mars_facts_df.to_html("mars_facts.html")
     #mars facts end
@@ -73,13 +73,19 @@ def scrape():
     for i in unique_image:
 
         header = i.find('h3').text
+
+        #go to image specific page
         hemi_image_url = i.find('a')['href']
         hemi_image_full_url = hemi_page_url + hemi_image_url
+        browser.visit(hemi_image_full_url)
 
         html = browser.html
         soup = bs(html, 'html.parser')
 
-        mars_images.append({"title": header, "image url": hemi_image_full_url})
+        download = soup.find('div', class_='downloads')
+        download_link = download.find('a')['href']
+
+        mars_images.append({"title": header, "image_url": hemi_page_url + download_link})
     #hemisphere image scrape end
 
     browser.quit()
@@ -87,9 +93,9 @@ def scrape():
     mars_scraped_dict = {
         "title" : titles,
         "teaser" : teaser_text,
-        "feature image" : featured_image_url,
-        "mars details" : mars_facts_html,
-        "mars pictures" : mars_images
+        "feature_image" : featured_image_url,
+        "mars_details" : mars_facts_html,
+        "mars_pictures" : mars_images
     }
 
     return mars_scraped_dict
